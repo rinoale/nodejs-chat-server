@@ -32,7 +32,7 @@ net.createServer(function (socket) {
   function broadcast(message, sender) {
     clients.forEach(function (client) {
       // Don't want to send it to sender
-      if (client === sender) return;
+      // if (client === sender) return;
       client.write(message);
     });
     // Log it to the server output too
