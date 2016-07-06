@@ -27,6 +27,11 @@ net.createServer(function (socket) {
     clients.splice(clients.indexOf(socket), 1);
     broadcast(socket.name + " left the chat.\n");
   });
+
+  socket.on('error', function () {
+    console.log(socket.name+' has been disconnected.');
+    clients.splice(clients.indexOf(socket), 1);
+  });
   
   // Send a message to all clients
   function broadcast(message, sender) {
