@@ -13,13 +13,22 @@ net.createServer(function (socket) {
   // Put this new client in the list
   clients.push(socket);
 
-  // Send a nice welcome message and announce
-  socket.write("Welcome " + socket.name + "\n");
-  broadcast(socket.name + " joined the chat\n", socket);
-
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
-    broadcast(socket.name + "> " + data + "\n", socket);
+    var json_data = JSON.parse(data);
+    var body = json_data.body;
+
+    switch(json_data.operation) {
+      case 'userinfo':
+        socket.name = body;
+        // Send a nice welcome message and announce
+        socket.write("Welcome " + socket.name + "\n");
+        broadcast(socket.name + " joined the chat\n", socket);
+        break;
+      case 'message':
+        broadcast(socket.name + "> " + body + "\n", socket);
+        break;
+    }
   });
 
   // Remove the client from the list when it leaves
