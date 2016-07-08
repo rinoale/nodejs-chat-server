@@ -4,6 +4,12 @@ net = require('net');
 // Keep track of the chat clients
 var clients = [];
 
+function Message(operation, user, message) {
+  this.operation = operation;
+  this.user = user;
+  this.message = message;
+}
+
 // Start a TCP Server
 net.createServer(function (socket) {
 
@@ -16,25 +22,29 @@ net.createServer(function (socket) {
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
     var json_data = JSON.parse(data);
-    var body = json_data.body;
 
     switch(json_data.operation) {
-      case 'userinfo':
-        socket.name = body;
+      case 'inform':
+        socket.name = json_data.user;
+
         // Send a nice welcome message and announce
-        socket.write("Welcome " + socket.name + "\n");
-        broadcast(socket.name + " joined the chat\n", socket);
+        json_data.message = 'Welcome ' + socket.name;
+        whisper(JSON.stringify(json_data), socket);
+
+        json_data.message = ' joined the chat';
+        broadcast(JSON.stringify(json_data), socket);
         break;
-      case 'message':
-        broadcast(socket.name + "> " + body + "\n", socket);
+      case 'chat':
+        broadcast(JSON.stringify(json_data), socket);
         break;
     }
   });
 
   // Remove the client from the list when it leaves
   socket.on('end', function () {
+    var message = new Message('info', socket.name, ' left the chat');
     clients.splice(clients.indexOf(socket), 1);
-    broadcast(socket.name + " left the chat.\n");
+    broadcast(JSON.stringify(message));
   });
 
   socket.on('error', function () {
@@ -50,7 +60,11 @@ net.createServer(function (socket) {
       client.write(message);
     });
     // Log it to the server output too
-    process.stdout.write(message)
+    process.stdout.write(message + "\n")
+  }
+
+  function whisper(message, socket) {
+    socket.write(message);
   }
 
 }).listen(1337);
