@@ -1,14 +1,12 @@
 // Load the TCP Library
-net = require('net');
+var net = require('net');
+
+var Message = require('./message.js');
+
+var message = new Message();
 
 // Keep track of the chat clients
 var clients = [];
-
-function Message(operation, user, message) {
-  this.operation = operation;
-  this.user = user;
-  this.message = message;
-}
 
 // Start a TCP Server
 net.createServer(function (socket) {
@@ -25,26 +23,26 @@ net.createServer(function (socket) {
 
     switch(json_data.operation) {
       case 'inform':
-        socket.name = json_data.user;
+        socket.name = json_data.message;
 
+        message.setNotice('Welcome ' + socket.name);;
         // Send a nice welcome message and announce
-        json_data.message = 'Welcome ' + socket.name;
-        whisper(JSON.stringify(json_data), socket);
+        personalcast(JSON.stringify(message), socket);
 
-        json_data.message = ' joined the chat';
-        broadcast(JSON.stringify(json_data), socket);
+        message.setInfo(socket.name, ' joined the chat');
         break;
       case 'chat':
-        broadcast(JSON.stringify(json_data), socket);
+        message.setChat(socket.name, json_data.message);
         break;
     }
+    broadcast(JSON.stringify(message), socket);
   });
 
   // Remove the client from the list when it leaves
   socket.on('end', function () {
-    var message = new Message('info', socket.name, ' left the chat');
+    message.setInfo(socket.name + ' left the chat');
+    broadcast(JSON.stringify(message), socket);
     clients.splice(clients.indexOf(socket), 1);
-    broadcast(JSON.stringify(message));
   });
 
   socket.on('error', function () {
@@ -63,7 +61,7 @@ net.createServer(function (socket) {
     process.stdout.write(message + "\n")
   }
 
-  function whisper(message, socket) {
+  function personalcast(message, socket) {
     socket.write(message);
   }
 
