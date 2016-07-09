@@ -1,9 +1,9 @@
 // Load the TCP Library
 var net = require('net');
 
-var Message = require('./message.js');
+var ServerMessage = require('./messages/serverMessage.js');
 
-var message = new Message();
+var message = new ServerMessage();
 
 // Keep track of the chat clients
 var clients = [];
