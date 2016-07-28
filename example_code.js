@@ -40,8 +40,16 @@ TestSocket.prototype.onData = function () {
         console.log('command ' + operation + ' is not defined');
       }
     });
+  });
+  this.socket.on('end', function () {
+    message.setInfo(this.socket.name + ' left the chat');
+    broadcast(JSON.stringify(message));
+    clients.splice(clients.indexOf(socket), 1);
+  });
 
-
+  this.socket.on('error', function () {
+    console.log(this.socket.name+' has been disconnected.');
+    clients.splice(clients.indexOf(socket), 1);
   });
 }
 
