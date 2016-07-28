@@ -2,11 +2,29 @@ var ServerMessage = require('../messages/serverMessage.js');
 
 var message = new ServerMessage();
 
-operationList = {};
-
 function UserSocket(socket) {
   this.socket = socket;
   this.userSocketList.push(this.socket);
+
+  operationList = {};
+
+  operationList.chat = function (data) {
+    message.setChat(this.name, data);
+
+    broadcast(message);
+  };
+
+  operationList.inform = function (data) {
+    this.name = data;
+
+    message.setNotice('Welcome ' + this.name);
+
+    personalcast(message);
+
+    message.setInfo(this.name, ' joined the chat');
+
+    broadcast(message);
+  };
 
   this.onData = function () {
     this.socket.on('data', function (data) {
@@ -43,37 +61,14 @@ function UserSocket(socket) {
 
 UserSocket.prototype.userSocketList = [];
 
-UserSocket.prototype.setUserName = function (name) {
-  this.name = name;
-};
-
-UserSocket.prototype.getUserName = function() {
-  return this.name;
-};
 UserSocket.prototype.getSocket = function () {
   console.log('getting this socket' + this.socket);
   return this.socket;
 };
 
-operationList.chat = function (data) {
-  message.setChat(UserSocket.prototype.getUserName(), data);
-
-  broadcast(message);
-};
-
-operationList.inform = function (data) {
-  UserSocket.prototype.setUserName(data);
-
-  message.setNotice('Welcome ' + UserSocket.prototype.getUserName());
-
-  personalcast(message);
-
-  message.setInfo(UserSocket.prototype.getUserName(), ' joined the chat');
-
-  broadcast(message);
-};
-
 function broadcast(message) {
+  console.log(this);
+  console.log(typeof this);
   UserSocket.prototype.userSocketList.forEach(function (client) {
     // Don't want to send it to sender
     // if (client === sender) return;
