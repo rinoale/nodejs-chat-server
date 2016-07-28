@@ -1,6 +1,8 @@
 // Load the TCP Library
 var net = require('net');
 
+var UserSocket = require('./sockets/userSocket.js');
+
 var ServerMessage = require('./messages/serverMessage.js');
 
 var message = new ServerMessage();
@@ -16,6 +18,8 @@ net.createServer(function (socket) {
 
   // Put this new client in the list
   clients.push(socket);
+
+  var userSocket = new UserSocket(socket);
 
   // Handle incoming messages from clients.
   socket.on('data', function (data) {
