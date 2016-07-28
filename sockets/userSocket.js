@@ -49,12 +49,12 @@ function UserSocket(socket) {
     userSocket.on('end', function () {
       message.setInfo(this.name + ' left the chat');
       broadcast(JSON.stringify(message));
-      this.userSocketList.splice(this.userSocketList.indexOf(this.socket), 1);
+      UserSocket.prototype.userSocketList.splice(UserSocket.prototype.userSocketList.indexOf(this.socket), 1);
     });
 
     userSocket.on('error', function () {
       console.log(this.name+' has been disconnected.');
-      this.userSocketList.splice(this.userSocketList.indexOf(this.socket), 1);
+      UserSocket.prototype.userSocketList.splice(UserSocket.prototype.userSocketList.indexOf(this.socket), 1);
     });
   }
 };
