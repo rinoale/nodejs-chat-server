@@ -2,32 +2,32 @@ var ServerMessage = require('../messages/serverMessage.js');
 
 var message = new ServerMessage();
 
+
 function UserSocket(socket) {
-  this.socket = socket;
-  this.userSocketList.push(this.socket);
+  userSocket = socket;
+  this.userSocketList.push(userSocket);
 
-  operationList = {};
 
-  operationList.chat = function (data) {
+  chat = function (data) {
     message.setChat(this.name, data);
 
     broadcast(message);
   };
 
-  operationList.inform = function (data) {
+  inform = function (data) {
     this.name = data;
 
-    message.setNotice('Welcome ' + this.name);
+    message.setNotice('Welcome ' + data);
 
     personalcast(message);
 
-    message.setInfo(this.name, ' joined the chat');
+    message.setInfo(data, ' joined the chat');
 
     broadcast(message);
   };
 
   this.onData = function () {
-    this.socket.on('data', function (data) {
+    userSocket.on('data', function (data) {
 
       messageArray = data.toString().split('\n');
 
@@ -38,21 +38,21 @@ function UserSocket(socket) {
 
         var operation = json_data.operation;
 
-        if (typeof operationList[operation] === 'function'){
-          operationList[operation](json_data.message);
+        if (typeof this[operation] === 'function'){
+          this[operation](json_data.message);
         }
         else {
           console.log('command ' + operation + ' is not defined');
         }
       });
     });
-    this.socket.on('end', function () {
+    userSocket.on('end', function () {
       message.setInfo(this.name + ' left the chat');
       broadcast(JSON.stringify(message));
       this.userSocketList.splice(this.userSocketList.indexOf(this.socket), 1);
     });
 
-    this.socket.on('error', function () {
+    userSocket.on('error', function () {
       console.log(this.name+' has been disconnected.');
       this.userSocketList.splice(this.userSocketList.indexOf(this.socket), 1);
     });
@@ -61,14 +61,8 @@ function UserSocket(socket) {
 
 UserSocket.prototype.userSocketList = [];
 
-UserSocket.prototype.getSocket = function () {
-  console.log('getting this socket' + this.socket);
-  return this.socket;
-};
-
+//the scope of this in this function is the same as UserSocket
 function broadcast(message) {
-  console.log(this);
-  console.log(typeof this);
   UserSocket.prototype.userSocketList.forEach(function (client) {
     // Don't want to send it to sender
     // if (client === sender) return;
@@ -79,7 +73,7 @@ function broadcast(message) {
 }
 
 function personalcast(message) {
-  console.log(UserSocket.prototype.getSocket());
+  this.userSocket.write(JSON.stringify(message));
 }
 
 module.exports = UserSocket;
