@@ -5,17 +5,19 @@ var message = new ServerMessage();
 
 function UserSocket(socket) {
   userSocket = socket;
+  name = '';
   this.userSocketList.push(userSocket);
 
 
   chat = function (data) {
-    message.setChat(this.name, data);
+    message.setChat(name, data);
 
     broadcast(message);
   };
 
   inform = function (data) {
-    this.name = data;
+    name = data;
+    console.log(this);
 
     message.setNotice('Welcome ' + data);
 
@@ -28,7 +30,6 @@ function UserSocket(socket) {
 
   this.onData = function () {
     userSocket.on('data', function (data) {
-
       messageArray = data.toString().split('\n');
 
       messageArray.forEach(function (message) {
@@ -47,14 +48,16 @@ function UserSocket(socket) {
       });
     });
     userSocket.on('end', function () {
-      message.setInfo(this.name + ' left the chat');
-      broadcast(JSON.stringify(message));
-      UserSocket.prototype.userSocketList.splice(UserSocket.prototype.userSocketList.indexOf(this.socket), 1);
+      message.setInfo(name,' left the chat');
+      broadcast(message);
+
+      dropUserSocket(userSocket);
     });
 
     userSocket.on('error', function () {
-      console.log(this.name+' has been disconnected.');
-      UserSocket.prototype.userSocketList.splice(UserSocket.prototype.userSocketList.indexOf(this.socket), 1);
+      console.log(name+' has been disconnected.');
+
+      dropUserSocket(userSocket);
     });
   }
 };
@@ -66,7 +69,7 @@ function broadcast(message) {
   UserSocket.prototype.userSocketList.forEach(function (client) {
     // Don't want to send it to sender
     // if (client === sender) return;
-    client.write(JSON.stringify(message));
+    client.write(JSON.stringify(message) + '\n');
   });
   // Log it to the server output too
   process.stdout.write(JSON.stringify(message) + "\n")
@@ -74,6 +77,11 @@ function broadcast(message) {
 
 function personalcast(message) {
   this.userSocket.write(JSON.stringify(message));
+}
+
+function dropUserSocket(userSocket) {
+  if (UserSocket.prototype.userSocketList.indexOf(userSocket) > -1) return;
+  UserSocket.prototype.userSocketList.splice(UserSocket.prototype.userSocketList.indexOf(userSocket), 1);
 }
 
 module.exports = UserSocket;
