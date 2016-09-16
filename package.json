@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "description": "socket server",
   "dependencies": {
+    "daemonize2": "~0.4.2",
     "express": "~4.14.0",
-    "daemonize2": "~0.4.2"
+    "lodash": "^4.15.0"
   }
 }
